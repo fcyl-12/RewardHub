@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="两个可爱的儿童头像">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#bfeede"/>
+      <stop offset="1" stop-color="#b9dcf4"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="160" rx="44" fill="url(#bg)"/>
+  <circle cx="48" cy="51" r="28" fill="#ffd9b5"/>
+  <path d="M20 55c0-27 10-40 29-40 21 0 31 15 28 39-11-10-19-15-30-16-7 9-16 14-27 17z" fill="#394863"/>
+  <circle cx="38" cy="55" r="3.5" fill="#26354a"/><circle cx="57" cy="55" r="3.5" fill="#26354a"/>
+  <path d="M41 68c5 4 10 4 15 0" fill="none" stroke="#bd665e" stroke-linecap="round" stroke-width="3"/>
+  <path d="M14 145c3-34 18-52 36-52s33 18 36 52" fill="#3b7fb7"/>
+  <circle cx="112" cy="54" r="28" fill="#ffd9b5"/>
+  <path d="M83 56c-2-29 11-43 31-43 22 0 34 17 29 43l-13-17c-9 9-22 14-39 17z" fill="#704d65"/>
+  <path d="M85 42c-12 2-13 17-5 24M139 42c12 2 13 17 5 24" fill="none" stroke="#704d65" stroke-linecap="round" stroke-width="7"/>
+  <circle cx="102" cy="57" r="3.5" fill="#26354a"/><circle cx="121" cy="57" r="3.5" fill="#26354a"/>
+  <path d="M105 70c5 4 10 4 15 0" fill="none" stroke="#bd665e" stroke-linecap="round" stroke-width="3"/>
+  <path d="M79 145c3-34 18-52 36-52s33 18 36 52" fill="#e27679"/>
+  <circle cx="23" cy="30" r="6" fill="#f4c963" opacity=".9"/>
+  <circle cx="143" cy="27" r="5" fill="#f09cae" opacity=".9"/>
+</svg>

@@ -1,0 +1,186 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#157a67">
+  <title>RewardHub · 带娃神器 · 0.6.3</title>
+  <link rel="icon" type="image/svg+xml" href="/static/illustrations/children-logo.svg">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <section class="login-screen" id="login-screen">
+    <div class="login-shell">
+      <img class="login-illustration" src="/static/illustrations/children-pair.svg" alt="">
+      <div class="brand brand-large"><img class="brand-mark" src="/static/illustrations/children-logo.svg" alt=""><span>带娃神器</span><span class="version-badge">0.6.3</span></div>
+      <p class="login-kicker">家庭积分管理 · 家长控制台</p>
+      <form id="login-form" class="login-form">
+        <label>账号<input name="username" autocomplete="username" required placeholder="请输入账号"></label>
+        <label>密码<input name="password" type="password" autocomplete="current-password" required placeholder="请输入密码"></label>
+        <button class="button button-primary button-block" type="submit">登录带娃神器</button>
+        <div class="form-error" id="login-error"></div>
+      </form>
+      <p class="login-footnote">管理账号负责给娃娃发分和扣分，娃娃账号提交申请后等待审核。</p>
+    </div>
+  </section>
+
+  <header class="topbar hidden" id="app-header">
+    <div class="brand"><img class="brand-mark" src="/static/illustrations/children-logo.svg" alt=""><span>带娃神器</span><span class="version-badge">0.6.3</span></div>
+    <div class="account-tools">
+      <select id="child-select" class="child-select hidden" aria-label="选择娃娃账号"></select>
+      <img id="user-avatar" class="avatar avatar-top" src="/static/avatars/adult-male.svg" alt="">
+      <span class="account-label" id="account-label"></span>
+      <span class="connection-state" id="connection-state">数据库已连接</span>
+      <button class="button button-quiet" id="logout-button" type="button">退出</button>
+    </div>
+  </header>
+
+  <main class="app-shell hidden" id="app-shell">
+    <section class="page active" data-page="home">
+      <div class="page-heading home-heading">
+        <div><span class="eyebrow">首页 / 0.6.3</span><h1 id="home-title">家庭监控总控</h1><p id="home-subtitle" class="page-subtitle">集中查看积分、申请和家庭账户状态</p></div>
+        <span class="date-chip" id="today-label"></span>
+      </div>
+
+      <div class="hero-panel">
+        <div class="hero-profile">
+          <img id="active-avatar" class="avatar avatar-hero" src="/static/illustrations/children-pair.svg" alt="">
+          <div><span class="eyebrow" id="active-account-kicker">当前娃娃</span><h2 id="active-name">暂无娃娃账号</h2><p id="active-username" class="muted"></p></div>
+        </div>
+        <div class="hero-balance"><span>当前积分</span><strong id="total-points">0</strong><small>积分</small></div>
+        <div class="hero-actions admin-only">
+          <button class="button button-primary command-button" data-page-target="earn" type="button"><span class="button-icon">＋</span><span>给娃娃加分<small>立即发放积分</small></span></button>
+          <button class="button button-danger command-button" data-page-target="deduct" type="button"><span class="button-icon">−</span><span>扣取积分<small>记录表现扣分</small></span></button>
+          <button class="button button-dark command-button" data-page-target="requests" type="button"><span class="button-icon">✓</span><span>审核申请<small id="pending-action-label">查看待处理</small></span></button>
+        </div>
+        <div class="hero-actions child-only">
+          <button class="button button-primary command-button command-wide" data-page-target="earn" type="button"><span class="button-icon">＋</span><span>申请赚取积分<small>提交后由家长审核</small></span></button>
+          <button class="button button-primary command-button" data-page-target="exchange" type="button"><span class="button-icon">★</span><span>兑换奖励<small>扣分后等待审核</small></span></button>
+          <button class="button button-dark command-button" data-page-target="requests" type="button"><span class="button-icon">↗</span><span>我的申请<small>查看处理进度</small></span></button>
+        </div>
+      </div>
+
+      <section class="control-center admin-only">
+        <div class="control-center-heading"><div><span class="eyebrow">家庭实时监控</span><h2>家庭监控总控</h2><p class="panel-note">当前家庭的积分、审批和账号状态集中在这里。</p></div><span class="live-chip"><i></i>运行正常</span></div>
+        <div class="control-center-grid">
+          <div class="control-center-overview"><img src="/static/illustrations/children-logo.svg" alt=""><div><strong id="control-center-title">家庭积分中枢</strong><span id="control-center-subtitle">等待娃娃账号接入</span></div></div>
+          <div class="control-center-actions"><button class="button button-primary" data-page-target="earn" type="button"><span class="button-icon">＋</span>快速给分</button><button class="button button-danger" data-page-target="deduct" type="button"><span class="button-icon">−</span>快速扣分</button><button class="button button-dark" data-page-target="requests" type="button"><span class="button-icon">✓</span>处理审核</button><button class="button button-outline" data-page-target="accounts" type="button"><span class="button-icon">◎</span>管理账号</button></div>
+          <div class="control-center-stats"><div><span>娃娃账号</span><strong id="control-child-count">0</strong></div><div><span>家庭积分</span><strong id="control-total-points">0</strong></div><div><span>待审核</span><strong id="control-pending-count">0</strong></div></div>
+        </div>
+      </section>
+
+      <section class="content-panel no-child-panel admin-only hidden" id="no-child-panel">
+        <div class="no-child-copy"><span class="eyebrow">账号准备</span><h2>还没有娃娃账号</h2><p class="panel-note">请先创建娃娃账号，之后才能配置积分项目、发放积分和审核兑换。</p></div>
+        <button class="button button-primary" data-page-target="accounts" type="button">去创建娃娃账号</button>
+      </section>
+
+      <div class="summary-grid" id="home-metrics"></div>
+
+      <section class="content-panel admin-only">
+        <div class="section-heading"><div><span class="eyebrow">总控监视器</span><h2>娃娃账户积分情况</h2></div><button class="text-button" data-page-target="accounts" type="button">查看全部账户 →</button></div>
+        <div class="table-scroll"><table class="management-table compact-table"><thead><tr><th>账户</th><th>当前积分</th><th>今日变化</th><th>待审核</th><th>状态</th></tr></thead><tbody id="home-account-summary"></tbody></table></div>
+      </section>
+
+      <section class="content-panel child-only">
+        <div class="section-heading"><div><span class="eyebrow">我的申请</span><h2>最近申请</h2></div><button class="text-button" data-page-target="requests" type="button">查看申请 →</button></div>
+        <div class="request-preview" id="home-request-preview"></div>
+      </section>
+
+      <section class="content-panel">
+        <div class="section-heading"><div><span class="eyebrow">趋势监控</span><h2 id="home-week-title">本周积分</h2></div><button class="text-button" data-page-target="records" type="button">查看记录 →</button></div>
+        <div class="week-grid" id="home-week-grid"></div>
+      </section>
+
+      <section class="content-panel admin-only control-panel">
+        <div><span class="eyebrow">管理工具</span><h2>管理工具</h2><p class="panel-note">所有加分、扣分和项目配置都作用于当前选中的娃娃账号。</p></div>
+        <div class="button-row"><button class="button button-outline" data-page-target="settings" type="button">项目设置</button><button class="button button-outline" data-page-target="accounts" type="button">账号管理</button><button class="button button-outline-danger" id="clear-points" type="button">清空积分</button><button class="button button-outline-danger" id="reset-system" type="button">恢复默认</button></div>
+      </section>
+    </section>
+
+    <section class="page admin-only" data-page="earn">
+      <div class="page-heading"><div><span class="eyebrow">发放积分</span><h1>给娃娃加分</h1><p class="page-subtitle">当前对象：<strong id="earn-target-name">暂无娃娃账号</strong></p></div></div>
+      <div class="feature-form earn-surface"><form class="quick-form" data-kind="earn"><input name="name" placeholder="加分说明，例如：完成作业"><input name="points" type="number" min="1" placeholder="积分" required><button class="button button-primary" type="submit">确认加分</button></form></div>
+      <div class="content-panel"><div class="section-heading"><h2>常用加分项目</h2><span class="muted">点击项目可直接发放</span></div><div class="item-list" id="earn-list"></div></div>
+    </section>
+
+    <section class="page admin-only" data-page="deduct">
+      <div class="page-heading"><div><span class="eyebrow">扣取积分</span><h1>扣取娃娃积分</h1><p class="page-subtitle">当前对象：<strong id="deduct-target-name">暂无娃娃账号</strong></p></div></div>
+      <div class="feature-form deduct-surface"><form class="quick-form" data-kind="deduct"><input name="name" placeholder="扣分说明，例如：未完成任务"><input name="points" type="number" min="1" placeholder="积分" required><button class="button button-danger" type="submit">确认扣分</button></form></div>
+      <div class="content-panel"><div class="section-heading"><h2>常用扣分项目</h2><span class="muted">点击项目可直接扣除</span></div><div class="item-list" id="deduct-list"></div></div>
+    </section>
+
+    <section class="page child-only" data-page="earn">
+      <div class="page-heading"><div><span class="eyebrow">积分申请</span><h1>申请赚取积分</h1><p class="page-subtitle">完成事项后提交申请，家长审核通过才会到账。</p></div></div>
+      <div class="feature-form earn-surface"><form class="quick-form" data-kind="earn"><input name="name" placeholder="完成了什么事情？"><input name="points" type="number" min="1" placeholder="申请积分" required><button class="button button-primary" type="submit">提交申请</button></form></div>
+      <div class="content-panel"><div class="section-heading"><h2>可申请的项目</h2><span class="muted">不会直接改变余额</span></div><div class="item-list" id="child-earn-list"></div></div>
+    </section>
+
+    <section class="page child-only" data-page="exchange">
+      <div class="page-heading"><div><span class="eyebrow">奖励兑换</span><h1>兑换奖励</h1><p class="page-subtitle">兑换会扣除积分，提交后等待管理账号审核。</p></div></div>
+      <div class="content-panel"><div class="section-heading"><h2>可兑换奖励</h2><span class="muted">审核通过后扣除积分</span></div><div class="item-list" id="exchange-list"></div></div>
+    </section>
+
+    <section class="page" data-page="requests">
+      <div class="page-heading"><div><span class="eyebrow">申请中心</span><h1 id="requests-title">审核申请</h1><p class="page-subtitle" id="requests-subtitle"></p></div></div>
+      <div class="content-panel"><div class="request-list" id="requests-list"></div></div>
+    </section>
+
+    <section class="page" data-page="records">
+      <div class="page-heading"><div><span class="eyebrow">积分记录</span><h1>积分记录</h1><p class="page-subtitle">查看当前娃娃账号的每日变化。</p></div><button class="button button-primary admin-only" id="open-manual" type="button">补录积分</button></div>
+      <div class="content-panel"><div class="section-heading"><h2 id="records-week-title">本周积分</h2></div><div class="week-grid" id="records-week-grid"></div></div>
+      <div class="content-panel"><div class="section-heading"><h2 id="selected-day-title">每日记录</h2></div><div class="record-list" id="day-records"></div></div>
+      <div class="content-panel"><div class="section-heading"><h2>月度统计</h2><div class="history-controls"><button class="icon-button" id="prev-month" title="上个月" type="button">‹</button><span id="history-month-label"></span><button class="icon-button" id="next-month" title="下个月" type="button">›</button></div></div><div id="history-calendar"></div></div>
+    </section>
+
+    <section class="page admin-only" data-page="settings">
+      <div class="page-heading"><div><span class="eyebrow">项目设置</span><h1>项目设置</h1><p class="page-subtitle">为当前娃娃维护常用的加分和扣分项目。</p></div></div>
+      <div class="settings-grid"><section class="content-panel"><div class="section-heading"><h2>加分项目</h2><button class="button button-small button-primary" data-open-editor="earn" type="button">新增</button></div><div class="item-list" id="earn-manage-list"></div></section><section class="content-panel"><div class="section-heading"><h2>扣分项目</h2><button class="button button-small button-danger" data-open-editor="deduct" type="button">新增</button></div><div class="item-list" id="deduct-manage-list"></div></section><section class="content-panel"><div class="section-heading"><h2>兑换奖励</h2><button class="button button-small button-dark" data-open-editor="reward" type="button">新增</button></div><div class="item-list" id="reward-manage-list"></div></section></div>
+    </section>
+
+    <section class="page admin-only" data-page="accounts">
+      <div class="page-heading"><div><span class="eyebrow">账号管理</span><h1>账号管理</h1><p class="page-subtitle">管理娃娃名称、头像和密码；管理账号只负责家庭规则。</p></div><button class="button button-primary" id="open-account" type="button">新增账号</button></div>
+      <div class="content-panel"><div class="table-scroll"><table class="management-table account-table"><thead><tr><th>账户</th><th>账号</th><th>类型</th><th>当前积分</th><th>今日变化</th><th>待审核</th><th>操作</th></tr></thead><tbody id="account-summary-body"></tbody></table></div></div>
+      <div class="content-panel"><div class="section-heading log-heading"><div><span class="eyebrow">变更日志</span><h2>账号变更日志</h2><span class="muted">新增、修改和删除都会留下记录</span></div><img class="log-illustration" src="/static/illustrations/children-pair.svg" alt=""></div><div class="table-scroll"><table class="management-table log-table"><thead><tr><th>时间</th><th>操作者</th><th>动作</th><th>目标账户</th><th>类型</th></tr></thead><tbody id="account-log-body"></tbody></table></div></div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav hidden" id="bottom-nav" aria-label="主要导航">
+    <button class="nav-button active" data-page-target="home" id="nav-home" type="button"><span>⌂</span><small>总览</small></button>
+    <button class="nav-button admin-only" data-page-target="earn" id="nav-earn" type="button"><span>＋</span><small>给分</small></button>
+    <button class="nav-button admin-only" data-page-target="deduct" id="nav-deduct" type="button"><span>−</span><small>扣分</small></button>
+    <button class="nav-button" data-page-target="requests" id="nav-requests" type="button"><span>✓</span><small id="nav-requests-label">审核</small></button>
+    <button class="nav-button" data-page-target="records" id="nav-records" type="button"><span>▤</span><small>记录</small></button>
+    <button class="nav-button child-only" data-page-target="exchange" id="nav-exchange" type="button"><span>★</span><small>兑换</small></button>
+    <button class="nav-button admin-only" data-page-target="accounts" id="nav-accounts" type="button"><span>◎</span><small>账号</small></button>
+  </nav>
+
+  <div class="modal-backdrop hidden" id="modal-backdrop">
+    <form class="modal" id="editor-form">
+      <div class="modal-header"><div><span class="eyebrow">项目</span><h2 id="modal-title">新增项目</h2></div><button class="icon-button" type="button" data-close-modal aria-label="关闭">×</button></div>
+      <label>项目名称<input id="editor-name" name="name" required maxlength="80"></label>
+      <label>积分数量<input id="editor-points" name="points" type="number" min="1" required></label>
+      <fieldset class="icon-picker-field"><legend>项目图片</legend><p class="panel-note">由管理员自主选择，项目名称不会影响图片。</p><div class="item-icon-picker" id="editor-icons"></div><input id="editor-icon" name="icon" type="hidden" required></fieldset>
+      <div class="modal-actions"><button class="button button-outline" type="button" data-close-modal>取消</button><button class="button button-primary" type="submit">保存项目</button></div>
+    </form>
+    <form class="modal hidden" id="manual-form">
+      <div class="modal-header"><div><span class="eyebrow">补录</span><h2>补录积分</h2></div><button class="icon-button" type="button" data-close-modal aria-label="关闭">×</button></div>
+      <label>补录原因<input name="name" required maxlength="100" placeholder="例如：线下奖励"></label>
+      <label>积分数量<input name="points" type="number" required placeholder="正数加分，负数扣分"></label>
+      <label>发生日期<input name="date" type="date" required></label>
+      <div class="modal-actions"><button class="button button-outline" type="button" data-close-modal>取消</button><button class="button button-primary" type="submit">确认补录</button></div>
+    </form>
+    <form class="modal hidden" id="account-form">
+      <div class="modal-header"><div><span class="eyebrow">账号</span><h2 id="account-modal-title">新增账号</h2></div><button class="icon-button" type="button" data-close-modal aria-label="关闭">×</button></div>
+      <label id="account-username-field">登录账号<input name="username" required minlength="3" maxlength="32" placeholder="例如：xiaoming"></label>
+      <label>显示名称<input name="display_name" required maxlength="40" placeholder="例如：小明"></label>
+      <label>密码<input name="password" type="password" minlength="6" placeholder="至少 6 位；编辑时留空表示不修改"></label>
+      <label id="account-role-field">账号类型<select name="role"><option value="child">娃娃账号</option><option value="admin">管理账号</option></select></label>
+      <label>头像<select name="avatar" id="account-avatar"></select></label>
+      <div class="modal-actions"><button class="button button-outline" type="button" data-close-modal>取消</button><button class="button button-primary" type="submit">保存账号</button></div>
+    </form>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
+

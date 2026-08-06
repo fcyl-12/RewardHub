@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" role="img">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#e2f6ed"/><stop offset="1" stop-color="#c7e8f5"/></linearGradient>
+  </defs>
+  <rect width="360" height="220" rx="42" fill="url(#sky)"/>
+  <circle cx="64" cy="48" r="18" fill="#ffd36b" opacity=".8"/>
+  <path d="M38 205c4-47 31-70 66-70s62 23 66 70" fill="#3d78b6"/>
+  <circle cx="104" cy="93" r="51" fill="#ffd3ae"/>
+  <path d="M52 93c-4-48 15-74 54-74 33 0 55 23 48 73-12-17-22-27-36-31-15 19-35 28-66 32z" fill="#2e3a4e"/>
+  <circle cx="84" cy="95" r="6" fill="#26354a"/><circle cx="124" cy="95" r="6" fill="#26354a"/>
+  <path d="M91 118c8 7 18 7 26 0" fill="none" stroke="#b95f54" stroke-linecap="round" stroke-width="4"/>
+  <path d="M201 205c4-47 31-70 66-70s62 23 66 70" fill="#dd6b67"/>
+  <circle cx="257" cy="93" r="51" fill="#ffd3ae"/>
+  <path d="M204 97c-9-53 9-78 54-78 43 0 61 30 51 80l-18-23-11-34c-19 17-40 25-68 28z" fill="#65435b"/>
+  <path d="M211 76c-17-2-25 13-18 28 5 11 14 17 24 18M303 76c17-2 25 13 18 28-5 11-14 17-24 18" fill="none" stroke="#65435b" stroke-linecap="round" stroke-width="12"/>
+  <circle cx="237" cy="95" r="6" fill="#26354a"/><circle cx="277" cy="95" r="6" fill="#26354a"/>
+  <path d="M244 118c8 7 18 7 26 0" fill="none" stroke="#b95f54" stroke-linecap="round" stroke-width="4"/>
+  <circle cx="190" cy="48" r="8" fill="#f3b5bd"/><circle cx="324" cy="48" r="8" fill="#f3b5bd"/>
+</svg>

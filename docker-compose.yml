@@ -1,0 +1,9 @@
+services:
+  rewardhub:
+    image: ghcr.io/fcyl-12/rewardhub:latest
+    container_name: rewardhub
+    ports:
+      - "9696:9696"
+    volumes:
+      - ./points_data:/data
+    restart: unless-stopped

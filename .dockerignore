@@ -1,0 +1,10 @@
+__pycache__/
+data/
+points_data/
+*.py[cod]
+*.db
+*.sqlite
+*.log
+.git/
+.venv/
+tests/

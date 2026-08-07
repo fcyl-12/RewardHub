@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.17 - 2026-08-07
+
+- fix: apply install wizard admin credentials (7e9db29)
+
 ## v0.6.16 - 2026-08-07
 
 - docs: remove binary deployment details (489b06b)

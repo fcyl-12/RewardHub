@@ -254,7 +254,7 @@ h2 { font-size: 21px; }
   .project-visual { width: 37px; height: 37px; }
 }
 
-/* v0.6.16: child branding, project icon picker, and the family command center */
+/* v0.6.17: child branding, project icon picker, and the family command center */
 .control-center { margin-bottom: 22px; padding: 26px; color: #fff; background: #1d3b42; border: 1px solid #315a5e; border-radius: 15px; box-shadow: 0 18px 40px rgba(29, 59, 66, .16); }
 .control-center-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 21px; }
 .control-center h2 { margin-top: 5px; font-size: 25px; }

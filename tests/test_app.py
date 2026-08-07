@@ -117,7 +117,7 @@ class PointsManagerApiTests(unittest.TestCase):
     def test_v06_child_permissions_avatars_and_account_edit(self):
         self.create_child(username="child", display_name="小朋友")
         state = self.state()
-        self.assertEqual(state["version"], "0.6.9")
+        self.assertEqual(state["version"], "0.6.10")
         self.assertEqual(state["user"]["avatar"], "adult-male")
         self.assertEqual(state["active_child"]["avatar"], "boy")
 

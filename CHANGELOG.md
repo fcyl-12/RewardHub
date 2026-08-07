@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.10 - 2026-08-07
+
+- fix: upload release assets with repository context (29d0763)
+
 ## v0.6.9 - 2026-08-07
 
 - fix: preserve binary archive filenames (cd79703)

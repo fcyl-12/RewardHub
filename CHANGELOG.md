@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.6.8 - 2026-08-07
+
+- fix: keep release version output clean (117912b)
+- feat: add binary release packaging and native confirmations (02e1a97)
+
 ## v0.6.7 - 2026-08-07
 
 - No user-facing changes recorded.

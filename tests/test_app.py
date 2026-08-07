@@ -117,7 +117,7 @@ class PointsManagerApiTests(unittest.TestCase):
     def test_v06_child_permissions_avatars_and_account_edit(self):
         self.create_child(username="child", display_name="小朋友")
         state = self.state()
-        self.assertEqual(state["version"], "0.6.3")
+        self.assertEqual(state["version"], "0.6.5")
         self.assertEqual(state["user"]["avatar"], "adult-male")
         self.assertEqual(state["active_child"]["avatar"], "boy")
 
@@ -255,6 +255,13 @@ class PointsManagerApiTests(unittest.TestCase):
         data = self.client.post("/api/system/reset").get_json()
         self.assertEqual(data["total_points"], 0)
         self.assertEqual(len(data["rewards"]), 4)
+
+    def test_custom_image_routes_find_uploaded_assets(self):
+        for asset in ("child-boy", "child-girl", "adult-male", "adult-female", "account-log", "login-cover", "control-center"):
+            response = self.client.get(f"/custom-assets/{asset}")
+            self.assertEqual(response.status_code, 200)
+            self.assertTrue(response.content_type.startswith("image/"))
+            response.close()
 
 
 if __name__ == "__main__":

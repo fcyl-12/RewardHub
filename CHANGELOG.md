@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.16 - 2026-08-07
+
+- docs: remove binary deployment details (489b06b)
+
 ## v0.6.15 - 2026-08-07
 
 - docs: simplify deployment README (23ce55b)

@@ -11,11 +11,20 @@ const appState = {
   accountEditId: null,
 };
 
+const CUSTOM_IMAGES = {
+  "child-boy": { src: "/custom-assets/child-boy", fallback: "/static/avatars/boy.svg" },
+  "child-girl": { src: "/custom-assets/child-girl", fallback: "/static/avatars/girl.svg" },
+  "adult-male": { src: "/custom-assets/adult-male", fallback: "/static/avatars/adult-male.svg" },
+  "adult-female": { src: "/custom-assets/adult-female", fallback: "/static/avatars/adult-female.svg" },
+  "account-log": { src: "/custom-assets/account-log", fallback: "/static/illustrations/children-pair.svg" },
+  "login-cover": { src: "/custom-assets/login-cover", fallback: "/static/illustrations/children-pair.svg" },
+  "control-center": { src: "/static/custom/app-icon.png", fallback: "/static/illustrations/children-logo.svg" },
+};
 const AVATARS = {
-  boy: { label: "男孩头像", src: "/static/avatars/boy.svg", role: "child" },
-  girl: { label: "女孩头像", src: "/static/avatars/girl.svg", role: "child" },
-  "adult-male": { label: "爸爸头像", src: "/static/avatars/adult-male.svg", role: "admin" },
-  "adult-female": { label: "妈妈头像", src: "/static/avatars/adult-female.svg", role: "admin" },
+  boy: { label: "男孩头像", ...CUSTOM_IMAGES["child-boy"], role: "child" },
+  girl: { label: "女孩头像", ...CUSTOM_IMAGES["child-girl"], role: "child" },
+  "adult-male": { label: "爸爸头像", ...CUSTOM_IMAGES["adult-male"], role: "admin" },
+  "adult-female": { label: "妈妈头像", ...CUSTOM_IMAGES["adult-female"], role: "admin" },
 };
 const PROJECT_ICONS = [
   ["points.svg", "积分"], ["homework.svg", "作业"], ["book.svg", "阅读"],
@@ -44,8 +53,21 @@ function avatarSource(value) {
   return AVATARS[value]?.src || AVATARS.boy.src;
 }
 
+function avatarFallback(value) {
+  return AVATARS[value]?.fallback || AVATARS.boy.fallback;
+}
+
+function setImageSource(element, source, fallback) {
+  if (!element) return;
+  element.onerror = () => {
+    element.onerror = null;
+    if (fallback) element.src = fallback;
+  };
+  element.src = source;
+}
+
 function avatarImage(value, className = "avatar avatar-small", alt = "") {
-  return `<img class="${className}" src="${avatarSource(value)}" alt="${escapeHtml(alt)}">`;
+  return `<img class="${className}" src="${avatarSource(value)}" alt="${escapeHtml(alt)}" onerror="this.onerror=null;this.src='${avatarFallback(value)}'">`;
 }
 
 function illustrationSource(icon, kind = "earn") {
@@ -130,7 +152,7 @@ function updateAccountUi() {
   document.querySelectorAll(".admin-only").forEach((element) => element.classList.toggle("hidden", !isAdmin));
   document.querySelectorAll(".child-only").forEach((element) => element.classList.toggle("hidden", isAdmin));
   document.getElementById("account-label").textContent = user ? `${user.display_name} · ${isAdmin ? "管理账号" : "娃娃账号"}` : "";
-  document.getElementById("user-avatar").src = avatarSource(user?.avatar);
+  setImageSource(document.getElementById("user-avatar"), avatarSource(user?.avatar), avatarFallback(user?.avatar));
   document.getElementById("nav-requests-label").textContent = isAdmin ? "审核" : "申请";
   const selector = document.getElementById("child-select");
   const children = appState.data.children || [];
@@ -192,7 +214,11 @@ function renderHome() {
   document.getElementById("home-title").textContent = user.role === "admin" ? (hasChild ? "家庭监控总控" : "先创建娃娃账号") : "我的积分空间";
   document.getElementById("home-subtitle").textContent = user.role === "admin" ? (hasChild ? "总览积分、审批和账户状态，快速执行家庭规则" : "当前还没有娃娃账号，请先到账号管理创建") : "完成任务后申请积分，等待家长审核到账";
   document.getElementById("today-label").textContent = today;
-  document.getElementById("active-avatar").src = account.avatar ? avatarSource(account.avatar) : "/static/illustrations/children-pair.svg";
+  setImageSource(
+    document.getElementById("active-avatar"),
+    account.avatar ? avatarSource(account.avatar) : CUSTOM_IMAGES["control-center"].src,
+    account.avatar ? avatarFallback(account.avatar) : CUSTOM_IMAGES["control-center"].fallback,
+  );
   document.getElementById("active-name").textContent = account.display_name || "暂无娃娃账号";
   document.getElementById("active-username").textContent = account.username ? `账号：${account.username}` : "";
   document.getElementById("active-account-kicker").textContent = user.role === "admin" ? "当前操作对象" : "我的账号";

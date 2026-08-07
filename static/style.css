@@ -33,7 +33,6 @@ h2 { font-size: 18px; line-height: 1.3; }
 .login-shell { width: min(430px, 100%); padding: 36px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
 .brand { display: flex; align-items: center; gap: 9px; font-weight: 850; letter-spacing: .02em; white-space: nowrap; }
 .brand-large { justify-content: center; font-size: 24px; }
-.brand-mark { width: 32px; height: 32px; display: grid; place-items: center; color: white; background: var(--green); border-radius: 9px; font-size: 16px; }
 .version-badge { padding: 4px 7px; color: var(--green-dark); background: var(--green-soft); border-radius: 999px; font-size: 10px; font-weight: 800; }
 .login-kicker { margin: 14px 0 28px; color: var(--muted); text-align: center; font-size: 13px; }
 .login-form label, .modal label { display: block; margin-bottom: 15px; color: var(--muted); font-size: 12px; font-weight: 750; }
@@ -205,14 +204,14 @@ h2 { font-size: 21px; }
 }
 
 /* v0.6.2: no-child state, project illustrations, and multi-device layout */
-.login-illustration { display: block; width: 190px; height: 116px; margin: 0 auto 18px; object-fit: contain; }
+.login-illustration { display: block; width: 190px; height: 190px; margin: 0 auto 18px; border-radius: 26px; object-fit: contain; box-shadow: 0 10px 24px rgba(25, 58, 48, .12); }
 .no-child-panel { display: flex; align-items: center; justify-content: space-between; gap: 24px; border: 1px solid #c7e3d6; background: #f2fbf6; }
 .no-child-copy { min-width: 0; }
 .no-child-copy h2 { margin: 6px 0; }
 .log-heading { align-items: center; }
 .log-heading > div { flex: 1; min-width: 0; }
 .log-heading .muted { display: block; margin-top: 7px; }
-.log-illustration { width: 116px; height: 74px; object-fit: contain; flex: 0 0 auto; }
+.log-illustration { width: 170px; height: 76px; object-fit: contain; flex: 0 0 auto; border-radius: 10px; }
 .item-info { display: flex; align-items: center; gap: 14px; min-width: 0; }
 .item-info > div:last-child { min-width: 0; }
 .item-info strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -232,10 +231,10 @@ h2 { font-size: 21px; }
 @media (max-width: 680px) {
   h1 { font-size: 31px; }
   .hero-balance strong { font-size: 54px; }
-  .login-illustration { width: 170px; height: 104px; }
+  .login-illustration { width: 170px; height: 170px; }
   .no-child-panel { align-items: stretch; flex-direction: column; gap: 16px; }
   .log-heading { align-items: flex-start; flex-direction: row; }
-  .log-illustration { width: 92px; height: 60px; }
+  .log-illustration { width: 128px; height: 58px; }
   .item-info { gap: 10px; }
   .project-visual-wrap { width: 48px; height: 48px; border-radius: 10px; }
   .project-visual { width: 41px; height: 41px; }
@@ -244,17 +243,15 @@ h2 { font-size: 21px; }
 }
 
 @media (max-width: 430px) {
-  .login-illustration { width: 150px; height: 92px; }
+  .login-illustration { width: 146px; height: 146px; border-radius: 21px; }
   .log-heading { gap: 5px; }
-  .log-illustration { width: 76px; height: 50px; }
+  .log-illustration { width: 98px; height: 45px; }
   .item-info strong { max-width: 150px; }
   .project-visual-wrap { width: 43px; height: 43px; }
   .project-visual { width: 37px; height: 37px; }
 }
 
-/* v0.6.3: child branding, project icon picker, and the family command center */
-.brand-mark { width: 38px; height: 38px; padding: 0; background: transparent; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 10px rgba(38, 83, 69, .12); }
-.brand-large .brand-mark { width: 48px; height: 48px; border-radius: 15px; }
+/* v0.6.5: child branding, project icon picker, and the family command center */
 .control-center { margin-bottom: 22px; padding: 26px; color: #fff; background: #1d3b42; border: 1px solid #315a5e; border-radius: 15px; box-shadow: 0 18px 40px rgba(29, 59, 66, .16); }
 .control-center-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 21px; }
 .control-center h2 { margin-top: 5px; font-size: 25px; }
@@ -263,7 +260,7 @@ h2 { font-size: 21px; }
 .live-chip i { width: 8px; height: 8px; background: #79d6a8; border-radius: 50%; box-shadow: 0 0 0 4px rgba(121, 214, 168, .14); }
 .control-center-grid { display: grid; grid-template-columns: 1.15fr 1.4fr .95fr; gap: 16px; align-items: stretch; }
 .control-center-overview { display: flex; align-items: center; gap: 14px; min-width: 0; padding: 16px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 11px; }
-.control-center-overview img { width: 70px; height: 70px; flex: 0 0 auto; object-fit: cover; border-radius: 20px; }
+.control-center-overview img { width: 84px; height: 84px; flex: 0 0 auto; padding: 3px; object-fit: contain; background: rgba(255,255,255,.94); border-radius: 18px; }
 .control-center-overview strong, .control-center-overview span { display: block; }
 .control-center-overview strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 17px; }
 .control-center-overview span { margin-top: 7px; color: rgba(255,255,255,.66); font-size: 12px; line-height: 1.5; }
@@ -299,11 +296,9 @@ h2 { font-size: 21px; }
 }
 
 @media (max-width: 430px) {
-  .brand-mark { width: 34px; height: 34px; border-radius: 10px; }
-  .brand-large .brand-mark { width: 43px; height: 43px; }
   .control-center { padding: 17px; }
   .control-center h2 { font-size: 22px; }
-  .control-center-overview img { width: 58px; height: 58px; border-radius: 16px; }
+  .control-center-overview img { width: 68px; height: 68px; border-radius: 14px; }
   .control-center-actions .button { padding: 0 11px; font-size: 13px; }
   .item-icon-picker { gap: 5px; }
   .icon-choice { min-height: 64px; }

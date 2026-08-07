@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.13 - 2026-08-07
+
+- feat: add first-run administrator setup (d134587)
+
 ## v0.6.12 - 2026-08-07
 
 - Update README.md (97ea7b6)

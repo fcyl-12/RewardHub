@@ -92,7 +92,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ github.repository_owner }}/rewardhub
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/rewardhub
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=raw,value=${{ steps.release.outputs.version }}

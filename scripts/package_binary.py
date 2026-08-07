@@ -39,14 +39,13 @@ def package_binary(version: str, platform: str, distpath: Path) -> Path:
     shutil.copy2(executable, package_dir / executable.name)
     shutil.copy2(ROOT / "BINARY_DEPLOYMENT.md", package_dir / "README.md")
 
-    archive = ROOT / "build" / f"RewardHub-{version}-{platform}"
     if platform == "windows-x86_64":
-        archive = archive.with_suffix(".zip")
+        archive = ROOT / "build" / f"RewardHub-{version}-{platform}.zip"
         with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as output:
             for file in package_dir.iterdir():
                 output.write(file, file.name)
     else:
-        archive = archive.with_suffix(".tar.gz")
+        archive = ROOT / "build" / f"RewardHub-{version}-{platform}.tar.gz"
         executable.chmod(executable.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
         packaged_executable = package_dir / executable.name
         packaged_executable.chmod(packaged_executable.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)

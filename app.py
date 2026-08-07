@@ -11,7 +11,7 @@ from functools import wraps
 from pathlib import Path
 from typing import Any, Iterator
 
-from flask import Flask, jsonify, render_template, request, session
+from flask import Flask, abort, jsonify, render_template, request, send_file, session
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -19,7 +19,7 @@ DATA_DIR = Path(os.getenv("DATA_DIR", str(BASE_DIR / "data")))
 DATABASE_PATH = Path(os.getenv("DATABASE_PATH", str(DATA_DIR / "points.db")))
 SECRET_KEY = os.getenv("SECRET_KEY", "change-this-secret-key-in-production")
 PASSWORD_ITERATIONS = 240_000
-APP_VERSION = "0.6.3"
+APP_VERSION = "0.6.5"
 AVATAR_OPTIONS = {"boy", "girl", "adult-male", "adult-female"}
 CHILD_AVATARS = {"boy", "girl"}
 PROJECT_ICONS = {
@@ -50,6 +50,11 @@ DEFAULT_REWARDS = [
 ]
 ITEM_TABLES = {"earn": "earn_items", "deduct": "deduct_items", "reward": "rewards"}
 USERNAME_PATTERN = re.compile(r"^[A-Za-z0-9_.-]{3,32}$")
+CUSTOM_ASSET_KEYS = {
+    "child-boy", "child-girl", "adult-male", "adult-female",
+    "account-log", "login-cover", "control-center",
+}
+CUSTOM_IMAGE_SUFFIXES = {".gif", ".jpeg", ".jpg", ".png", ".webp"}
 
 app = Flask(__name__)
 app.config.update(
@@ -504,6 +509,32 @@ def state_payload(conn: sqlite3.Connection, user: sqlite3.Row) -> dict[str, Any]
 
 def api_error(message: str, status: int = 400):
     return jsonify({"error": message}), status
+
+
+def find_custom_asset(asset_key: str) -> Path | None:
+    """Find a user image whether it is flat or nested by an upload tool."""
+    if asset_key not in CUSTOM_ASSET_KEYS:
+        return None
+    custom_dir = BASE_DIR / "static" / "custom"
+    for entry in sorted(custom_dir.glob(f"{asset_key}.*"), key=lambda item: item.name.lower()):
+        if entry.is_file() and entry.suffix.lower() in CUSTOM_IMAGE_SUFFIXES:
+            return entry
+        if entry.is_dir():
+            nested = sorted(
+                (child for child in entry.rglob("*") if child.is_file() and child.suffix.lower() in CUSTOM_IMAGE_SUFFIXES),
+                key=lambda item: str(item).lower(),
+            )
+            if nested:
+                return nested[0]
+    return None
+
+
+@app.get("/custom-assets/<asset_key>")
+def custom_asset(asset_key: str):
+    asset = find_custom_asset(asset_key)
+    if asset is None:
+        abort(404)
+    return send_file(asset)
 
 
 @app.get("/")

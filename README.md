@@ -1,8 +1,10 @@
 # RewardHub / 带娃神器
 
+版本：`0.6.5`
+
 RewardHub 是一个家庭积分与奖励管理系统，中文界面名称为“带娃神器”。支持管理账号、娃娃账号、积分发放、兑换审核、账号头像、项目自选图片和操作日志。
 
-本项目只提供 Docker 镜像部署方式，其他 Docker 设备或飞牛NAS。
+本项目只提供 Docker 镜像部署方式，其他 Docker 设备或飞牛 NAS 不需要 Python 环境，也不需要下载源代码进行构建。
 
 ## Docker Compose 部署
 
@@ -64,6 +66,16 @@ docker run -d \
   ghcr.io/fcyl-12/rewardhub:latest
 ```
 
+## 飞牛 NAS 部署
+
+1. 在飞牛 NAS 创建一个应用目录，例如 `rewardhub`。
+2. 将上面的 `docker-compose.yml` 放入该目录。
+3. 在该目录执行 `docker compose pull`。
+4. 执行 `docker compose up -d`。
+5. 使用浏览器访问 `http://飞牛NAS地址:9696`。
+
+飞牛 NAS 图形化容器管理也可以直接使用镜像 `ghcr.io/fcyl-12/rewardhub:latest`，端口映射为 `9696:9696`，挂载目录为 `/data`。
+
 ## 首次登录
 
 首次启动只自动创建管理账号，娃娃账号不会预置，需要管理员登录后在“账号管理”中创建：
@@ -73,3 +85,24 @@ docker run -d \
 | 管理账号 | `admin` | `admin123` |
 
 首次登录后请立即修改管理账号密码，并在生产环境配置安全的 `SECRET_KEY`。娃娃账号可以由管理员设置显示名称、密码和头像；娃娃账号可以删除到 0 个，之后再由管理员创建新的账号。
+
+## 镜像发布
+
+推送到 `main` 分支后，GitHub Actions 会自动构建并发布 GHCR 镜像。镜像发布工作流位于 `.github/workflows/publish-image.yml`。
+
+如果 GHCR 包默认为私有，请在 GitHub 的 Packages 设置中将 `rewardhub` 设置为公开；公开后其他 Docker 设备可以直接执行 `docker pull`，无需登录 GitHub。
+
+## 项目结构
+
+```text
+.
+├── app.py
+├── templates/index.html
+├── static/app.js
+├── static/style.css
+├── static/avatars/
+├── static/illustrations/
+├── Dockerfile
+├── docker-compose.yml
+└── .github/workflows/publish-image.yml
+```

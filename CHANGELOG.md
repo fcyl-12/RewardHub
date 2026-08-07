@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.15 - 2026-08-07
+
+- docs: simplify deployment README (23ce55b)
+
 ## v0.6.14 - 2026-08-07
 
 - fix: preserve install wizard credentials (6e01c60)

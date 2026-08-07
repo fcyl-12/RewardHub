@@ -1,6 +1,6 @@
 .RECIPEPREFIX := >
 .ONESHELL:
-SHELL := /usr/bin/env bash
+SHELL := /bin/bash
 
 PYTHON ?= python3
 CURRENT_VERSION := $(shell sed -nE 's/^APP_VERSION = "([^"]+)"/\1/p' app.py | head -n 1)

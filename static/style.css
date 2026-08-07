@@ -35,6 +35,7 @@ h2 { font-size: 18px; line-height: 1.3; }
 .brand-large { justify-content: center; font-size: 24px; }
 .version-badge { padding: 4px 7px; color: var(--green-dark); background: var(--green-soft); border-radius: 999px; font-size: 10px; font-weight: 800; }
 .login-kicker { margin: 14px 0 28px; color: var(--muted); text-align: center; font-size: 13px; }
+.setup-shell { border-top: 4px solid var(--green); }
 .login-form label, .modal label { display: block; margin-bottom: 15px; color: var(--muted); font-size: 12px; font-weight: 750; }
 input, select { width: 100%; min-height: 42px; margin-top: 7px; padding: 0 12px; color: var(--ink); background: var(--surface); border: 1px solid #d5e2dc; border-radius: 6px; outline: none; }
 input:focus, select:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(21, 122, 103, .11); }

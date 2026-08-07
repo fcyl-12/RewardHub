@@ -115,6 +115,11 @@ async function api(url, options = {}) {
 
 async function loadState() {
   try {
+    const setup = await api("/api/setup/status");
+    if (!setup.configured) {
+      showSetup();
+      return;
+    }
     appState.data = await api("/api/state");
     if (appState.data.user?.role === "admin") {
       appState.accounts = (await api("/api/accounts")).accounts;
@@ -131,6 +136,7 @@ async function loadState() {
 
 function showApp() {
   document.getElementById("login-screen").classList.add("hidden");
+  document.getElementById("setup-screen").classList.add("hidden");
   document.getElementById("app-header").classList.remove("hidden");
   document.getElementById("app-shell").classList.remove("hidden");
   document.getElementById("bottom-nav").classList.remove("hidden");
@@ -142,6 +148,17 @@ function showLogin() {
   appState.page = "home";
   closeModal();
   document.getElementById("login-screen").classList.remove("hidden");
+  document.getElementById("setup-screen").classList.add("hidden");
+  document.getElementById("app-header").classList.add("hidden");
+  document.getElementById("app-shell").classList.add("hidden");
+  document.getElementById("bottom-nav").classList.add("hidden");
+}
+
+function showSetup() {
+  appState.data = null;
+  closeModal();
+  document.getElementById("login-screen").classList.add("hidden");
+  document.getElementById("setup-screen").classList.remove("hidden");
   document.getElementById("app-header").classList.add("hidden");
   document.getElementById("app-shell").classList.add("hidden");
   document.getElementById("bottom-nav").classList.add("hidden");
@@ -625,6 +642,31 @@ document.getElementById("login-form").addEventListener("submit", async (event) =
     appState.page = "home";
     await loadState();
   } catch (error) { document.getElementById("login-error").textContent = error.message; }
+});
+
+document.getElementById("setup-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const error = document.getElementById("setup-error");
+  error.textContent = "";
+  if (form.elements.password.value !== form.elements.password_confirm.value) {
+    error.textContent = "两次输入的密码不一致";
+    return;
+  }
+  try {
+    await api("/api/setup/admin", {
+      method: "POST",
+      body: JSON.stringify({
+        username: form.elements.username.value.trim(),
+        password: form.elements.password.value,
+        password_confirm: form.elements.password_confirm.value,
+      }),
+    });
+    form.reset();
+    await loadState();
+  } catch (requestError) {
+    error.textContent = requestError.message;
+  }
 });
 
 document.getElementById("editor-form").addEventListener("submit", saveEditor);

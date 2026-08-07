@@ -23,6 +23,21 @@
       <p class="login-footnote">管理账号负责给娃娃发分和扣分，娃娃账号提交申请后等待审核。</p>
     </div>
   </section>
+  <section class="login-screen hidden" id="setup-screen">
+    <div class="login-shell setup-shell">
+      <img class="login-illustration" src="/static/custom/app-icon.png" alt="家长助手" onerror="this.onerror=null;this.src='/static/illustrations/children-pair.svg'">
+      <div class="brand brand-large"><span>首次设置管理员</span><span class="version-badge">仅首次</span></div>
+      <p class="login-kicker">先创建管理账号，之后才能进入带娃神器。</p>
+      <form id="setup-form" class="login-form">
+        <label>管理员账号<input name="username" autocomplete="username" minlength="3" maxlength="32" pattern="[A-Za-z0-9_.-]{3,32}" required placeholder="3-32 位字母、数字或符号"></label>
+        <label>管理员密码<input name="password" type="password" autocomplete="new-password" minlength="6" required placeholder="至少 6 位"></label>
+        <label>确认密码<input name="password_confirm" type="password" autocomplete="new-password" minlength="6" required placeholder="再次输入管理员密码"></label>
+        <button class="button button-primary button-block" type="submit">创建管理员并进入</button>
+        <div class="form-error" id="setup-error"></div>
+      </form>
+      <p class="login-footnote">账号信息只保存在当前数据目录。Docker 可通过 ADMIN_USERNAME 和 ADMIN_PASSWORD 在首次启动时预置。</p>
+    </div>
+  </section>
 
   <header class="topbar hidden" id="app-header">
     <div class="brand"><span>带娃神器</span><span class="version-badge">0.6.12</span></div>

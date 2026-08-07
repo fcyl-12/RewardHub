@@ -10,10 +10,16 @@ class PointsManagerApiTests(unittest.TestCase):
         cls.temp_dir = tempfile.TemporaryDirectory()
         os.environ["DATA_DIR"] = cls.temp_dir.name
         os.environ["DATABASE_PATH"] = str(Path(cls.temp_dir.name) / "test.db")
-        from app import app
+        os.environ["ADMIN_USERNAME"] = "admin"
+        os.environ["ADMIN_PASSWORD"] = "admin123"
+        from app import app, connection, create_admin_account, migrate_legacy_admin_account, password_hash
 
         cls.app = app
         cls.client = app.test_client()
+        cls.connection = connection
+        cls.create_admin_account = create_admin_account
+        cls.migrate_legacy_admin_account = migrate_legacy_admin_account
+        cls.password_hash = password_hash
 
     @classmethod
     def tearDownClass(cls):
@@ -88,6 +94,66 @@ class PointsManagerApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json()["total_points"], 10)
         self.assertEqual(self.client.post("/api/system/reset").status_code, 403)
+
+    def test_first_run_admin_setup(self):
+        with type(self).connection() as conn:
+            for table in ("account_logs", "point_requests", "records", "earn_items", "deduct_items", "rewards", "accounts"):
+                conn.execute(f"DELETE FROM {table}")
+
+        try:
+            self.client.post("/api/auth/logout")
+            self.assertEqual(self.client.get("/api/setup/status").get_json(), {"configured": False})
+            self.assertEqual(self.client.get("/api/state").status_code, 401)
+
+            response = self.client.post(
+                "/api/setup/admin",
+                json={"username": "my-admin", "password": "secure123", "password_confirm": "secure123"},
+            )
+            self.assertEqual(response.status_code, 201)
+            self.assertEqual(response.get_json()["user"]["username"], "my-admin")
+            self.assertEqual(self.client.get("/api/setup/status").get_json(), {"configured": True})
+            self.assertEqual(
+                self.client.post(
+                    "/api/setup/admin",
+                    json={"username": "another-admin", "password": "secure123", "password_confirm": "secure123"},
+                ).status_code,
+                409,
+            )
+            self.client.post("/api/auth/logout")
+            self.assertEqual(
+                self.client.post("/api/auth/login", json={"username": "my-admin", "password": "secure123"}).status_code,
+                200,
+            )
+        finally:
+            with type(self).connection() as conn:
+                for table in ("account_logs", "point_requests", "records", "earn_items", "deduct_items", "rewards", "accounts"):
+                    conn.execute(f"DELETE FROM {table}")
+                type(self).create_admin_account(conn, "admin", "admin123")
+
+    def test_install_credentials_replace_only_untouched_legacy_admin(self):
+        os.environ["ADMIN_USERNAME"] = "new-admin"
+        os.environ["ADMIN_PASSWORD"] = "new-secret"
+        try:
+            with type(self).connection() as conn:
+                type(self).migrate_legacy_admin_account(conn)
+            self.client.post("/api/auth/logout")
+            self.assertEqual(
+                self.client.post("/api/auth/login", json={"username": "new-admin", "password": "new-secret"}).status_code,
+                200,
+            )
+            self.client.post("/api/auth/logout")
+            self.assertEqual(
+                self.client.post("/api/auth/login", json={"username": "admin", "password": "admin123"}).status_code,
+                401,
+            )
+        finally:
+            os.environ["ADMIN_USERNAME"] = "admin"
+            os.environ["ADMIN_PASSWORD"] = "admin123"
+            with type(self).connection() as conn:
+                conn.execute(
+                    "UPDATE accounts SET username = ?, password_hash = ?, display_name = ? WHERE role = 'admin'",
+                    ("admin", type(self).password_hash("admin123"), "管理员"),
+                )
 
     def test_child_transactions_require_admin_approval(self):
         self.create_child(username="child", display_name="小朋友")

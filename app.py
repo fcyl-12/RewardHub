@@ -111,6 +111,50 @@ def password_matches(password: str, encoded: str) -> bool:
         return False
 
 
+def admin_credentials_from_env() -> tuple[str, str] | None:
+    username = os.getenv("ADMIN_USERNAME", "").strip()
+    password = os.getenv("ADMIN_PASSWORD", "")
+    if not username and not password:
+        return None
+    if not USERNAME_PATTERN.fullmatch(username) or len(password) < 6:
+        return None
+    return username, password
+
+
+def create_admin_account(conn: sqlite3.Connection, username: str, password: str) -> sqlite3.Row:
+    now = datetime.now().astimezone().isoformat(timespec="seconds")
+    conn.execute(
+        "INSERT INTO accounts(username, password_hash, display_name, role, avatar, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+        (username, password_hash(password), "管理员", "admin", "adult-male", now),
+    )
+    return conn.execute("SELECT * FROM accounts WHERE username = ?", (username,)).fetchone()
+
+
+def migrate_legacy_admin_account(conn: sqlite3.Connection) -> None:
+    """Replace only the untouched admin/admin123 account with install-time credentials."""
+    credentials = admin_credentials_from_env()
+    if credentials is None:
+        return
+    admin = conn.execute(
+        "SELECT * FROM accounts WHERE role = 'admin' AND active = 1 ORDER BY id LIMIT 1"
+    ).fetchone()
+    if admin is None or admin["username"] != "admin":
+        return
+    if not password_matches("admin123", admin["password_hash"]):
+        return
+    username, password = credentials
+    if username == "admin" and password == "admin123":
+        return
+    try:
+        conn.execute(
+            "UPDATE accounts SET username = ?, password_hash = ?, display_name = ? WHERE id = ?",
+            (username, password_hash(password), "管理员", admin["id"]),
+        )
+    except sqlite3.IntegrityError:
+        # Never replace a real account that already uses the requested username.
+        return
+
+
 def table_has_column(conn: sqlite3.Connection, table: str, column: str) -> bool:
     return any(row["name"] == column for row in conn.execute(f"PRAGMA table_info({table})").fetchall())
 
@@ -287,13 +331,13 @@ def init_db() -> None:
                 (default_icon, *PROJECT_ICONS),
             )
 
-        now = datetime.now().astimezone().isoformat(timespec="seconds")
-        admin = conn.execute("SELECT * FROM accounts WHERE username = 'admin'").fetchone()
+        admin = conn.execute("SELECT * FROM accounts WHERE role = 'admin' AND active = 1 ORDER BY id LIMIT 1").fetchone()
         if admin is None:
-            conn.execute(
-                "INSERT INTO accounts(username, password_hash, display_name, role, avatar, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-                ("admin", password_hash("admin123"), "管理员", "admin", "adult-male", now),
-            )
+            credentials = admin_credentials_from_env()
+            if credentials:
+                create_admin_account(conn, *credentials)
+        else:
+            migrate_legacy_admin_account(conn)
         conn.execute("UPDATE accounts SET avatar = 'adult-male' WHERE username = 'admin' AND avatar = 'boy'")
         remove_legacy_default_child(conn)
         for row in conn.execute("SELECT id FROM accounts WHERE role = 'child' AND active = 1").fetchall():
@@ -555,6 +599,42 @@ def index():
 @app.get("/api/health")
 def health():
     return jsonify({"status": "ok", "version": APP_VERSION})
+
+
+@app.get("/api/setup/status")
+def setup_status():
+    with connection() as conn:
+        configured = conn.execute(
+            "SELECT 1 FROM accounts WHERE role = 'admin' AND active = 1 LIMIT 1"
+        ).fetchone() is not None
+    return jsonify({"configured": configured})
+
+
+@app.post("/api/setup/admin")
+def setup_admin():
+    payload = request.get_json(silent=True) or {}
+    username = str(payload.get("username", "")).strip()
+    password = str(payload.get("password", ""))
+    password_confirm = str(payload.get("password_confirm", ""))
+    if not USERNAME_PATTERN.fullmatch(username):
+        return api_error("管理员账号需为 3-32 位字母、数字、下划线、点或短横线")
+    if len(password) < 6:
+        return api_error("管理员密码至少需要 6 位")
+    if password != password_confirm:
+        return api_error("两次输入的密码不一致")
+    with connection() as conn:
+        existing = conn.execute(
+            "SELECT 1 FROM accounts WHERE role = 'admin' AND active = 1 LIMIT 1"
+        ).fetchone()
+        if existing is not None:
+            return api_error("管理员已经设置完成，请直接登录", 409)
+        try:
+            user = create_admin_account(conn, username, password)
+        except sqlite3.IntegrityError:
+            return api_error("账号名已存在")
+        session.clear()
+        session["user_id"] = int(user["id"])
+        return jsonify(state_payload(conn, user)), 201
 
 
 @app.post("/api/auth/login")

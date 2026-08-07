@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.11 - 2026-08-07
+
+- No user-facing changes recorded.
+
 ## v0.6.10 - 2026-08-07
 
 - fix: upload release assets with repository context (29d0763)

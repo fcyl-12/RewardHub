@@ -4,15 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#157a67">
-  <title>RewardHub · 带娃神器 · 0.6.3</title>
-  <link rel="icon" type="image/svg+xml" href="/static/illustrations/children-logo.svg">
+  <title>RewardHub · 带娃神器 · 0.6.5</title>
+  <link rel="icon" type="image/png" href="/static/custom/app-icon.png">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <section class="login-screen" id="login-screen">
     <div class="login-shell">
-      <img class="login-illustration" src="/static/illustrations/children-pair.svg" alt="">
-      <div class="brand brand-large"><img class="brand-mark" src="/static/illustrations/children-logo.svg" alt=""><span>带娃神器</span><span class="version-badge">0.6.3</span></div>
+      <img class="login-illustration" src="/static/custom/app-icon.png" alt="家长助手" onerror="this.onerror=null;this.src='/static/illustrations/children-pair.svg'">
+      <div class="brand brand-large"><span>带娃神器</span><span class="version-badge">0.6.5</span></div>
       <p class="login-kicker">家庭积分管理 · 家长控制台</p>
       <form id="login-form" class="login-form">
         <label>账号<input name="username" autocomplete="username" required placeholder="请输入账号"></label>
@@ -25,10 +25,10 @@
   </section>
 
   <header class="topbar hidden" id="app-header">
-    <div class="brand"><img class="brand-mark" src="/static/illustrations/children-logo.svg" alt=""><span>带娃神器</span><span class="version-badge">0.6.3</span></div>
+    <div class="brand"><span>带娃神器</span><span class="version-badge">0.6.5</span></div>
     <div class="account-tools">
       <select id="child-select" class="child-select hidden" aria-label="选择娃娃账号"></select>
-      <img id="user-avatar" class="avatar avatar-top" src="/static/avatars/adult-male.svg" alt="">
+      <img id="user-avatar" class="avatar avatar-top" src="/custom-assets/adult-male" alt="" onerror="this.onerror=null;this.src='/static/avatars/adult-male.svg'">
       <span class="account-label" id="account-label"></span>
       <span class="connection-state" id="connection-state">数据库已连接</span>
       <button class="button button-quiet" id="logout-button" type="button">退出</button>
@@ -38,13 +38,13 @@
   <main class="app-shell hidden" id="app-shell">
     <section class="page active" data-page="home">
       <div class="page-heading home-heading">
-        <div><span class="eyebrow">首页 / 0.6.3</span><h1 id="home-title">家庭监控总控</h1><p id="home-subtitle" class="page-subtitle">集中查看积分、申请和家庭账户状态</p></div>
+        <div><span class="eyebrow">首页 / 0.6.5</span><h1 id="home-title">家庭监控总控</h1><p id="home-subtitle" class="page-subtitle">集中查看积分、申请和家庭账户状态</p></div>
         <span class="date-chip" id="today-label"></span>
       </div>
 
       <div class="hero-panel">
         <div class="hero-profile">
-          <img id="active-avatar" class="avatar avatar-hero" src="/static/illustrations/children-pair.svg" alt="">
+          <img id="active-avatar" class="avatar avatar-hero" src="/static/custom/app-icon.png" alt="家长助手" onerror="this.onerror=null;this.src='/static/illustrations/children-pair.svg'">
           <div><span class="eyebrow" id="active-account-kicker">当前娃娃</span><h2 id="active-name">暂无娃娃账号</h2><p id="active-username" class="muted"></p></div>
         </div>
         <div class="hero-balance"><span>当前积分</span><strong id="total-points">0</strong><small>积分</small></div>
@@ -63,7 +63,7 @@
       <section class="control-center admin-only">
         <div class="control-center-heading"><div><span class="eyebrow">家庭实时监控</span><h2>家庭监控总控</h2><p class="panel-note">当前家庭的积分、审批和账号状态集中在这里。</p></div><span class="live-chip"><i></i>运行正常</span></div>
         <div class="control-center-grid">
-          <div class="control-center-overview"><img src="/static/illustrations/children-logo.svg" alt=""><div><strong id="control-center-title">家庭积分中枢</strong><span id="control-center-subtitle">等待娃娃账号接入</span></div></div>
+          <div class="control-center-overview"><img src="/static/custom/app-icon.png" alt="家长助手" onerror="this.onerror=null;this.src='/static/illustrations/children-logo.svg'"><div><strong id="control-center-title">家庭积分中枢</strong><span id="control-center-subtitle">等待娃娃账号接入</span></div></div>
           <div class="control-center-actions"><button class="button button-primary" data-page-target="earn" type="button"><span class="button-icon">＋</span>快速给分</button><button class="button button-danger" data-page-target="deduct" type="button"><span class="button-icon">−</span>快速扣分</button><button class="button button-dark" data-page-target="requests" type="button"><span class="button-icon">✓</span>处理审核</button><button class="button button-outline" data-page-target="accounts" type="button"><span class="button-icon">◎</span>管理账号</button></div>
           <div class="control-center-stats"><div><span>娃娃账号</span><strong id="control-child-count">0</strong></div><div><span>家庭积分</span><strong id="control-total-points">0</strong></div><div><span>待审核</span><strong id="control-pending-count">0</strong></div></div>
         </div>
@@ -140,7 +140,7 @@
     <section class="page admin-only" data-page="accounts">
       <div class="page-heading"><div><span class="eyebrow">账号管理</span><h1>账号管理</h1><p class="page-subtitle">管理娃娃名称、头像和密码；管理账号只负责家庭规则。</p></div><button class="button button-primary" id="open-account" type="button">新增账号</button></div>
       <div class="content-panel"><div class="table-scroll"><table class="management-table account-table"><thead><tr><th>账户</th><th>账号</th><th>类型</th><th>当前积分</th><th>今日变化</th><th>待审核</th><th>操作</th></tr></thead><tbody id="account-summary-body"></tbody></table></div></div>
-      <div class="content-panel"><div class="section-heading log-heading"><div><span class="eyebrow">变更日志</span><h2>账号变更日志</h2><span class="muted">新增、修改和删除都会留下记录</span></div><img class="log-illustration" src="/static/illustrations/children-pair.svg" alt=""></div><div class="table-scroll"><table class="management-table log-table"><thead><tr><th>时间</th><th>操作者</th><th>动作</th><th>目标账户</th><th>类型</th></tr></thead><tbody id="account-log-body"></tbody></table></div></div>
+      <div class="content-panel"><div class="section-heading log-heading"><div><span class="eyebrow">变更日志</span><h2>账号变更日志</h2><span class="muted">新增、修改和删除都会留下记录</span></div><img class="log-illustration" src="/custom-assets/account-log" alt="" onerror="this.onerror=null;this.src='/static/illustrations/children-pair.svg'"></div><div class="table-scroll"><table class="management-table log-table"><thead><tr><th>时间</th><th>操作者</th><th>动作</th><th>目标账户</th><th>类型</th></tr></thead><tbody id="account-log-body"></tbody></table></div></div>
     </section>
   </main>
 

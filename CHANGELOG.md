@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.7 - 2026-08-07
+
+- No user-facing changes recorded.
+
 ## v0.6.6 - 2026-08-07
 
 - Update publish-image.yml (3d6cd9d)

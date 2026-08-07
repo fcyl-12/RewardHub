@@ -9,10 +9,10 @@ TAG := v$(VERSION)
 .PHONY: version next-version test check bump-version changelog release binary binary-package package-binary
 
 version:
->$(PYTHON) -c "print('$(VERSION)', end='')"
+>@$(PYTHON) -c "print('$(VERSION)', end='')"
 
 next-version:
->$(PYTHON) scripts/release.py next-version
+>@$(PYTHON) scripts/release.py next-version
 
 test:
 >$(PYTHON) -m unittest discover -s tests -q

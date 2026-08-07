@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.12 - 2026-08-07
+
+- Update README.md (97ea7b6)
+
 ## v0.6.11 - 2026-08-07
 
 - No user-facing changes recorded.

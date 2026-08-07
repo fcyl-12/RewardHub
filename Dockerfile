@@ -1,7 +1,7 @@
 FROM python:3.12-slim-bookworm
 
 LABEL org.opencontainers.image.title="RewardHub" \
-      org.opencontainers.image.version="0.6.5"
+      org.opencontainers.image.version="0.6.6"
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \

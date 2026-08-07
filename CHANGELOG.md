@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.6 - 2026-08-07
+
+- Update publish-image.yml (3d6cd9d)
+
 ## v0.6.5 - 2026-08-07
 
 - release: RewardHub v0.6.3 (9f67c9f)

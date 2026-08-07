@@ -190,5 +190,5 @@ jobs:
         run: |
           find dist -type f \( -name '*.tar.gz' -o -name '*.zip' \) -print0 |
             while IFS= read -r -d '' asset; do
-              gh release upload "$TAG" "$asset" --clobber
+              gh release upload "$TAG" "$asset" --repo "$GITHUB_REPOSITORY" --clobber
             done

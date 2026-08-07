@@ -27,7 +27,7 @@ DATA_DIR = Path(os.getenv("DATA_DIR", str(DEFAULT_DATA_DIR)))
 DATABASE_PATH = Path(os.getenv("DATABASE_PATH", str(DATA_DIR / "points.db")))
 SECRET_KEY = os.getenv("SECRET_KEY", "change-this-secret-key-in-production")
 PASSWORD_ITERATIONS = 240_000
-APP_VERSION = "0.6.16"
+APP_VERSION = "0.6.17"
 AVATAR_OPTIONS = {"boy", "girl", "adult-male", "adult-female"}
 CHILD_AVATARS = {"boy", "girl"}
 PROJECT_ICONS = {
@@ -138,6 +138,33 @@ def admin_credentials_from_env() -> tuple[str, str] | None:
     return username, password
 
 
+def admin_credentials_fingerprint(credentials: tuple[str, str]) -> str:
+    """Return a non-reversible marker for the last applied install credentials."""
+    username, password = credentials
+    payload = f"{username}\0{password}".encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def admin_credentials_marker_path() -> Path:
+    return DATA_DIR / ".admin-credentials.applied"
+
+
+def install_credentials_are_applied(credentials: tuple[str, str]) -> bool:
+    marker = admin_credentials_marker_path()
+    try:
+        return marker.read_text(encoding="ascii").strip() == admin_credentials_fingerprint(credentials)
+    except (OSError, UnicodeError):
+        return False
+
+
+def mark_install_credentials_applied(credentials: tuple[str, str]) -> None:
+    marker = admin_credentials_marker_path()
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    temp_marker = marker.with_name(f"{marker.name}.{os.getpid()}.tmp")
+    temp_marker.write_text(admin_credentials_fingerprint(credentials), encoding="ascii")
+    temp_marker.replace(marker)
+
+
 def create_admin_account(conn: sqlite3.Connection, username: str, password: str) -> sqlite3.Row:
     now = datetime.now().astimezone().isoformat(timespec="seconds")
     conn.execute(
@@ -170,6 +197,39 @@ def migrate_legacy_admin_account(conn: sqlite3.Connection) -> None:
     except sqlite3.IntegrityError:
         # Never replace a real account that already uses the requested username.
         return
+
+
+def apply_install_admin_credentials(conn: sqlite3.Connection, credentials: tuple[str, str]) -> bool:
+    """Apply install-wizard credentials once without deleting application data."""
+    username, password = credentials
+    requested = conn.execute(
+        "SELECT * FROM accounts WHERE username = ? AND active = 1", (username,)
+    ).fetchone()
+    if requested is not None and requested["role"] != "admin":
+        return False
+
+    if requested is not None:
+        conn.execute(
+            "UPDATE accounts SET password_hash = ? WHERE id = ?",
+            (password_hash(password), requested["id"]),
+        )
+        return True
+
+    admin = conn.execute(
+        "SELECT * FROM accounts WHERE role = 'admin' AND active = 1 ORDER BY id LIMIT 1"
+    ).fetchone()
+    if admin is None:
+        create_admin_account(conn, username, password)
+        return True
+
+    try:
+        conn.execute(
+            "UPDATE accounts SET username = ?, password_hash = ? WHERE id = ?",
+            (username, password_hash(password), admin["id"]),
+        )
+    except sqlite3.IntegrityError:
+        return False
+    return True
 
 
 def table_has_column(conn: sqlite3.Connection, table: str, column: str) -> bool:
@@ -348,13 +408,16 @@ def init_db() -> None:
                 (default_icon, *PROJECT_ICONS),
             )
 
-        admin = conn.execute("SELECT * FROM accounts WHERE role = 'admin' AND active = 1 ORDER BY id LIMIT 1").fetchone()
-        if admin is None:
-            credentials = admin_credentials_from_env()
-            if credentials:
-                create_admin_account(conn, *credentials)
+        credentials = admin_credentials_from_env()
+        if credentials and not install_credentials_are_applied(credentials):
+            if apply_install_admin_credentials(conn, credentials):
+                mark_install_credentials_applied(credentials)
         else:
-            migrate_legacy_admin_account(conn)
+            admin = conn.execute(
+                "SELECT * FROM accounts WHERE role = 'admin' AND active = 1 ORDER BY id LIMIT 1"
+            ).fetchone()
+            if admin is None:
+                migrate_legacy_admin_account(conn)
         conn.execute("UPDATE accounts SET avatar = 'adult-male' WHERE username = 'admin' AND avatar = 'boy'")
         remove_legacy_default_child(conn)
         for row in conn.execute("SELECT id FROM accounts WHERE role = 'child' AND active = 1").fetchall():

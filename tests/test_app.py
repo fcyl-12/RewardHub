@@ -15,9 +15,12 @@ class PointsManagerApiTests(unittest.TestCase):
         os.environ["ADMIN_PASSWORD"] = "admin123"
         from app import (
             admin_credentials_from_env,
+            admin_credentials_marker_path,
             app,
             connection,
             create_admin_account,
+            init_db,
+            mark_install_credentials_applied,
             migrate_legacy_admin_account,
             password_hash,
         )
@@ -26,6 +29,9 @@ class PointsManagerApiTests(unittest.TestCase):
         cls.client = app.test_client()
         cls.connection = connection
         cls.create_admin_account = create_admin_account
+        cls.init_db = init_db
+        cls.admin_credentials_marker_path = admin_credentials_marker_path
+        cls.mark_install_credentials_applied = mark_install_credentials_applied
         cls.migrate_legacy_admin_account = migrate_legacy_admin_account
         cls.password_hash = password_hash
         cls.admin_credentials_from_env = admin_credentials_from_env
@@ -164,6 +170,54 @@ class PointsManagerApiTests(unittest.TestCase):
                     ("admin", type(self).password_hash("admin123"), "管理员"),
                 )
 
+    def test_install_credentials_replace_existing_custom_admin_once(self):
+        os.environ["ADMIN_USERNAME"] = "wizard-admin"
+        os.environ["ADMIN_PASSWORD"] = "wizard-secret"
+        marker = type(self).admin_credentials_marker_path()
+        marker.unlink(missing_ok=True)
+        try:
+            with type(self).connection() as conn:
+                conn.execute(
+                    "UPDATE accounts SET username = ?, password_hash = ? WHERE role = 'admin'",
+                    ("old-admin", type(self).password_hash("old-secret")),
+                )
+            type(self).init_db()
+            self.client.post("/api/auth/logout")
+            self.assertEqual(
+                self.client.post(
+                    "/api/auth/login", json={"username": "wizard-admin", "password": "wizard-secret"}
+                ).status_code,
+                200,
+            )
+            self.assertEqual(
+                self.client.post(
+                    "/api/auth/login", json={"username": "old-admin", "password": "old-secret"}
+                ).status_code,
+                401,
+            )
+
+            with type(self).connection() as conn:
+                conn.execute(
+                    "UPDATE accounts SET password_hash = ? WHERE username = ?",
+                    (type(self).password_hash("manual-secret"), "wizard-admin"),
+                )
+            type(self).init_db()
+            self.assertEqual(
+                self.client.post(
+                    "/api/auth/login", json={"username": "wizard-admin", "password": "manual-secret"}
+                ).status_code,
+                200,
+            )
+        finally:
+            os.environ["ADMIN_USERNAME"] = "admin"
+            os.environ["ADMIN_PASSWORD"] = "admin123"
+            with type(self).connection() as conn:
+                conn.execute(
+                    "UPDATE accounts SET username = ?, password_hash = ? WHERE role = 'admin'",
+                    ("admin", type(self).password_hash("admin123")),
+                )
+            type(self).mark_install_credentials_applied(("admin", "admin123"))
+
     def test_install_credentials_support_base64_env_values(self):
         encoded_username = base64.b64encode("base64-admin".encode("utf-8")).decode("ascii")
         encoded_password = base64.b64encode("p@ss word#$".encode("utf-8")).decode("ascii")
@@ -206,7 +260,7 @@ class PointsManagerApiTests(unittest.TestCase):
     def test_v06_child_permissions_avatars_and_account_edit(self):
         self.create_child(username="child", display_name="小朋友")
         state = self.state()
-        self.assertEqual(state["version"], "0.6.16")
+        self.assertEqual(state["version"], "0.6.17")
         self.assertEqual(state["user"]["avatar"], "adult-male")
         self.assertEqual(state["active_child"]["avatar"], "boy")
 

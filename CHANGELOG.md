@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.9 - 2026-08-07
+
+- fix: preserve binary archive filenames (cd79703)
+
 ## v0.6.8 - 2026-08-07
 
 - fix: keep release version output clean (117912b)

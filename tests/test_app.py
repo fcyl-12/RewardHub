@@ -1,3 +1,4 @@
+import base64
 import os
 import tempfile
 import unittest
@@ -12,7 +13,14 @@ class PointsManagerApiTests(unittest.TestCase):
         os.environ["DATABASE_PATH"] = str(Path(cls.temp_dir.name) / "test.db")
         os.environ["ADMIN_USERNAME"] = "admin"
         os.environ["ADMIN_PASSWORD"] = "admin123"
-        from app import app, connection, create_admin_account, migrate_legacy_admin_account, password_hash
+        from app import (
+            admin_credentials_from_env,
+            app,
+            connection,
+            create_admin_account,
+            migrate_legacy_admin_account,
+            password_hash,
+        )
 
         cls.app = app
         cls.client = app.test_client()
@@ -20,6 +28,7 @@ class PointsManagerApiTests(unittest.TestCase):
         cls.create_admin_account = create_admin_account
         cls.migrate_legacy_admin_account = migrate_legacy_admin_account
         cls.password_hash = password_hash
+        cls.admin_credentials_from_env = admin_credentials_from_env
 
     @classmethod
     def tearDownClass(cls):
@@ -154,6 +163,20 @@ class PointsManagerApiTests(unittest.TestCase):
                     "UPDATE accounts SET username = ?, password_hash = ?, display_name = ? WHERE role = 'admin'",
                     ("admin", type(self).password_hash("admin123"), "管理员"),
                 )
+
+    def test_install_credentials_support_base64_env_values(self):
+        encoded_username = base64.b64encode("base64-admin".encode("utf-8")).decode("ascii")
+        encoded_password = base64.b64encode("p@ss word#$".encode("utf-8")).decode("ascii")
+        os.environ["ADMIN_USERNAME_B64"] = encoded_username
+        os.environ["ADMIN_PASSWORD_B64"] = encoded_password
+        try:
+            self.assertEqual(
+                type(self).admin_credentials_from_env(),
+                ("base64-admin", "p@ss word#$"),
+            )
+        finally:
+            os.environ.pop("ADMIN_USERNAME_B64", None)
+            os.environ.pop("ADMIN_PASSWORD_B64", None)
 
     def test_child_transactions_require_admin_approval(self):
         self.create_child(username="child", display_name="小朋友")

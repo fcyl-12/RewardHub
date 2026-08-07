@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import base64
+import binascii
 import hashlib
 import os
 import re
@@ -111,9 +113,24 @@ def password_matches(password: str, encoded: str) -> bool:
         return False
 
 
+def environment_value(name: str) -> str:
+    """Read an optional base64 value before the plain environment variable.
+
+    FlyNAS stores wizard passwords in an env file. Base64 keeps characters such
+    as `$`, `#`, quotes, and spaces from being reinterpreted by Compose.
+    """
+    encoded = os.getenv(f"{name}_B64", "").strip()
+    if encoded:
+        try:
+            return base64.b64decode(encoded, validate=True).decode("utf-8")
+        except (ValueError, UnicodeDecodeError, binascii.Error):
+            return ""
+    return os.getenv(name, "")
+
+
 def admin_credentials_from_env() -> tuple[str, str] | None:
-    username = os.getenv("ADMIN_USERNAME", "").strip()
-    password = os.getenv("ADMIN_PASSWORD", "")
+    username = environment_value("ADMIN_USERNAME").strip()
+    password = environment_value("ADMIN_PASSWORD")
     if not username and not password:
         return None
     if not USERNAME_PATTERN.fullmatch(username) or len(password) < 6:

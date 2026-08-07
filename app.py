@@ -5,6 +5,7 @@ import os
 import re
 import secrets
 import sqlite3
+import sys
 from contextlib import contextmanager
 from datetime import date, datetime
 from functools import wraps
@@ -15,7 +16,12 @@ from flask import Flask, abort, jsonify, render_template, request, send_file, se
 
 
 BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = Path(os.getenv("DATA_DIR", str(BASE_DIR / "data")))
+RESOURCE_DIR = Path(getattr(sys, "_MEIPASS", BASE_DIR))
+if getattr(sys, "frozen", False):
+    DEFAULT_DATA_DIR = Path(sys.executable).resolve().parent / "data"
+else:
+    DEFAULT_DATA_DIR = BASE_DIR / "data"
+DATA_DIR = Path(os.getenv("DATA_DIR", str(DEFAULT_DATA_DIR)))
 DATABASE_PATH = Path(os.getenv("DATABASE_PATH", str(DATA_DIR / "points.db")))
 SECRET_KEY = os.getenv("SECRET_KEY", "change-this-secret-key-in-production")
 PASSWORD_ITERATIONS = 240_000
@@ -56,7 +62,11 @@ CUSTOM_ASSET_KEYS = {
 }
 CUSTOM_IMAGE_SUFFIXES = {".gif", ".jpeg", ".jpg", ".png", ".webp"}
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    template_folder=str(RESOURCE_DIR / "templates"),
+    static_folder=str(RESOURCE_DIR / "static"),
+)
 app.config.update(
     SECRET_KEY=SECRET_KEY,
     SESSION_COOKIE_HTTPONLY=True,
@@ -515,7 +525,7 @@ def find_custom_asset(asset_key: str) -> Path | None:
     """Find a user image whether it is flat or nested by an upload tool."""
     if asset_key not in CUSTOM_ASSET_KEYS:
         return None
-    custom_dir = BASE_DIR / "static" / "custom"
+    custom_dir = RESOURCE_DIR / "static" / "custom"
     for entry in sorted(custom_dir.glob(f"{asset_key}.*"), key=lambda item: item.name.lower()):
         if entry.is_file() and entry.suffix.lower() in CUSTOM_IMAGE_SUFFIXES:
             return entry

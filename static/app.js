@@ -11,6 +11,8 @@ const appState = {
   accountEditId: null,
 };
 
+let confirmResolver = null;
+
 const CUSTOM_IMAGES = {
   "child-boy": { src: "/custom-assets/child-boy", fallback: "/static/avatars/boy.svg" },
   "child-girl": { src: "/custom-assets/child-girl", fallback: "/static/avatars/girl.svg" },
@@ -438,12 +440,39 @@ function openEditAccount(id) {
 }
 
 function showModal(formId) {
-  ["editor-form", "manual-form", "account-form"].forEach((id) => document.getElementById(id).classList.toggle("hidden", id !== formId));
+  ["editor-form", "manual-form", "account-form", "confirm-modal"].forEach((id) => document.getElementById(id).classList.toggle("hidden", id !== formId));
   document.getElementById("modal-backdrop").classList.remove("hidden");
 }
 
 function closeModal() {
   document.getElementById("modal-backdrop")?.classList.add("hidden");
+  if (confirmResolver) {
+    const resolve = confirmResolver;
+    confirmResolver = null;
+    resolve(false);
+  }
+}
+
+function requestConfirm(message, options = {}) {
+  return new Promise((resolve) => {
+    if (confirmResolver) confirmResolver(false);
+    confirmResolver = resolve;
+    document.getElementById("confirm-title").textContent = options.title || "请确认操作";
+    document.getElementById("confirm-message").textContent = message;
+    const submit = document.getElementById("confirm-submit");
+    submit.textContent = options.confirmLabel || "确认";
+    submit.classList.toggle("button-danger", options.danger !== false);
+    submit.classList.toggle("button-primary", options.danger === false);
+    showModal("confirm-modal");
+    requestAnimationFrame(() => document.getElementById("confirm-cancel")?.focus());
+  });
+}
+
+function settleConfirm(confirmed) {
+  const resolve = confirmResolver;
+  confirmResolver = null;
+  document.getElementById("modal-backdrop")?.classList.add("hidden");
+  resolve?.(confirmed);
 }
 
 function findItem(kind, id) {
@@ -472,13 +501,13 @@ async function saveAccount(event) {
 }
 
 async function deleteAccount(id) {
-  if (!window.confirm("删除账号会同时删除积分和记录，确定继续吗？")) return;
+  if (!await requestConfirm("删除账号会同时删除积分和记录，确定继续吗？", { title: "删除账号", confirmLabel: "删除账号" })) return;
   try { await api(`/api/accounts/${id}`, { method: "DELETE" }); await loadState(); navigate("accounts"); showToast("账号已删除"); } catch (error) { showToast(error.message); }
 }
 
 async function reviewRequest(action, id) {
   const message = action === "approve" ? "通过后积分会立即计入娃娃余额，确定吗？" : "确定拒绝这条申请吗？";
-  if (!window.confirm(message)) return;
+  if (!await requestConfirm(message, { title: action === "approve" ? "通过申请" : "拒绝申请", confirmLabel: action === "approve" ? "通过" : "拒绝", danger: action !== "approve" })) return;
   try {
     appState.data = await api(`/api/requests/${id}/${action}`, { method: "POST", body: JSON.stringify(action === "reject" ? { reason: "管理账号拒绝了这条申请" } : {}) });
     if (appState.data.user.role === "admin") appState.accounts = (await api("/api/accounts")).accounts;
@@ -534,12 +563,12 @@ async function saveManual(event) {
 }
 
 async function deleteItem(kind, id) {
-  if (!window.confirm("确定删除这个项目吗？")) return;
+  if (!await requestConfirm("确定删除这个项目吗？", { title: "删除项目", confirmLabel: "删除项目" })) return;
   try { await api(`/api/items/${kind}/${id}`, { method: "DELETE" }); await loadState(); showToast("项目已删除"); } catch (error) { showToast(error.message); }
 }
 
 async function undoRecord(id) {
-  if (!window.confirm("撤销后积分余额会回滚，确定继续吗？")) return;
+  if (!await requestConfirm("撤销后积分余额会回滚，确定继续吗？", { title: "撤销积分记录", confirmLabel: "确认撤销" })) return;
   try { appState.data = await api(`/api/transactions/${id}/undo`, { method: "POST" }); render(); showToast("记录已撤销"); } catch (error) { showToast(error.message); }
 }
 
@@ -611,12 +640,18 @@ document.getElementById("child-select").addEventListener("change", async (event)
 document.getElementById("prev-month").addEventListener("click", () => { if (appState.historyMonth === 0) { appState.historyMonth = 11; appState.historyYear -= 1; } else appState.historyMonth -= 1; renderHistory(); });
 document.getElementById("next-month").addEventListener("click", () => { if (appState.historyMonth === 11) { appState.historyMonth = 0; appState.historyYear += 1; } else appState.historyMonth += 1; renderHistory(); });
 document.getElementById("modal-backdrop").addEventListener("click", (event) => { if (event.target.id === "modal-backdrop") closeModal(); });
+document.getElementById("confirm-cancel").addEventListener("click", () => settleConfirm(false));
+document.getElementById("confirm-close").addEventListener("click", () => settleConfirm(false));
+document.getElementById("confirm-submit").addEventListener("click", () => settleConfirm(true));
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !document.getElementById("modal-backdrop").classList.contains("hidden")) closeModal();
+});
 document.getElementById("clear-points").addEventListener("click", async () => {
-  if (!window.confirm("确定清空当前娃娃的全部积分记录吗？")) return;
+  if (!await requestConfirm("确定清空当前娃娃的全部积分记录吗？", { title: "清空积分记录", confirmLabel: "清空记录" })) return;
   try { appState.data = await api("/api/system/clear", { method: "POST" }); render(); showToast("积分记录已清空"); } catch (error) { showToast(error.message); }
 });
 document.getElementById("reset-system").addEventListener("click", async () => {
-  if (!window.confirm("确定恢复当前娃娃的默认设置吗？")) return;
+  if (!await requestConfirm("确定恢复当前娃娃的默认设置吗？", { title: "恢复默认设置", confirmLabel: "恢复默认" })) return;
   try { appState.data = await api("/api/system/reset", { method: "POST" }); render(); showToast("当前娃娃已恢复默认设置"); } catch (error) { showToast(error.message); }
 });
 

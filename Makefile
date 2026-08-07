@@ -1,14 +1,18 @@
 .RECIPEPREFIX := >
-SHELL := /bin/bash
 
 PYTHON ?= python3
+BINARY_NAME ?= RewardHub-$(VERSION)
+BINARY_DIST ?= build/dist
 VERSION ?= $(shell $(PYTHON) scripts/release.py next-version)
 TAG := v$(VERSION)
 
-.PHONY: version next-version test check bump-version changelog release
+.PHONY: version next-version test check bump-version changelog release binary binary-package package-binary
 
-version next-version:
->@printf '%s' "$(VERSION)"
+version:
+>$(PYTHON) -c "print('$(VERSION)', end='')"
+
+next-version:
+>$(PYTHON) scripts/release.py next-version
 
 test:
 >$(PYTHON) -m unittest discover -s tests -q
@@ -29,3 +33,9 @@ release:
 >$(MAKE) bump-version VERSION="$(VERSION)"
 >$(MAKE) changelog VERSION="$(VERSION)"
 >$(MAKE) check
+
+binary:
+>$(PYTHON) scripts/build_binary.py --name "$(BINARY_NAME)" --distpath "$(BINARY_DIST)"
+
+binary-package package-binary: binary
+>$(PYTHON) scripts/package_binary.py --version "$(VERSION)" --platform "$(BINARY_PLATFORM)" --distpath "$(BINARY_DIST)"

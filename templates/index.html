@@ -178,6 +178,11 @@
       <label>头像<select name="avatar" id="account-avatar"></select></label>
       <div class="modal-actions"><button class="button button-outline" type="button" data-close-modal>取消</button><button class="button button-primary" type="submit">保存账号</button></div>
     </form>
+    <section class="modal confirm-modal hidden" id="confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message">
+      <div class="modal-header"><div><span class="eyebrow">操作确认</span><h2 id="confirm-title">请确认操作</h2></div><button class="icon-button" type="button" id="confirm-close" aria-label="取消">×</button></div>
+      <p class="confirm-message" id="confirm-message"></p>
+      <div class="modal-actions confirm-actions"><button class="button button-outline" type="button" id="confirm-cancel">取消</button><button class="button button-danger" type="button" id="confirm-submit">确认</button></div>
+    </section>
   </div>
   <div class="toast" id="toast" role="status"></div>
   <script src="{{ url_for('static', filename='app.js') }}"></script>

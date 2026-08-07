@@ -1,4 +1,4 @@
-name: Release and publish Docker image
+name: Release, Docker image, and binaries
 
 on:
   push:
@@ -21,6 +21,10 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      tag: ${{ steps.release.outputs.tag }}
 
     steps:
       - name: Checkout full history
@@ -106,3 +110,85 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  build-binaries:
+    name: Build ${{ matrix.platform }} binary
+    needs: release
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            platform: linux-x86_64
+          - os: windows-2022
+            platform: windows-x86_64
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout released source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install application and packaging dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements.txt -r requirements-build.txt
+
+      - name: Ensure Make is available on Windows
+        if: matrix.platform == 'windows-x86_64'
+        shell: pwsh
+        run: |
+          if (-not (Get-Command make -ErrorAction SilentlyContinue)) {
+            choco install make --yes --no-progress
+          }
+
+      - name: Package binary with Makefile
+        run: make VERSION="${{ needs.release.outputs.version }}" BINARY_PLATFORM="${{ matrix.platform }}" binary-package
+
+      - name: Upload Linux binary artifact
+        if: matrix.platform == 'linux-x86_64'
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-linux-x86_64
+          path: build/RewardHub-*-linux-x86_64.tar.gz
+          if-no-files-found: error
+
+      - name: Upload Windows binary artifact
+        if: matrix.platform == 'windows-x86_64'
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-windows-x86_64
+          path: build/RewardHub-*-windows-x86_64.zip
+          if-no-files-found: error
+
+  publish-binaries:
+    name: Upload binaries to Release
+    needs:
+      - release
+      - build-binaries
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download binary artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: binary-*
+          path: dist
+          merge-multiple: true
+
+      - name: Upload binaries to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.release.outputs.tag }}
+        shell: bash
+        run: |
+          find dist -type f \( -name '*.tar.gz' -o -name '*.zip' \) -print0 |
+            while IFS= read -r -d '' asset; do
+              gh release upload "$TAG" "$asset" --clobber
+            done

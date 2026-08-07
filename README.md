@@ -4,7 +4,16 @@
 
 RewardHub 是一个家庭积分与奖励管理系统，中文界面名称为“带娃神器”。支持管理账号、娃娃账号、积分发放、兑换审核、账号头像、项目自选图片和操作日志。
 
-本项目只提供 Docker 镜像部署方式，其他 Docker 设备或飞牛 NAS 不需要 Python 环境，也不需要下载源代码进行构建。
+本项目支持二进制部署和 Docker 镜像部署。其他 Docker 设备或飞牛 NAS 不需要 Python 环境，也不需要下载源代码进行构建。
+
+## 二进制部署
+
+每次推送 `main` 后，GitHub Actions 会自动在对应 Release 上传：
+
+- `RewardHub-版本号-linux-x86_64.tar.gz`
+- `RewardHub-版本号-windows-x86_64.zip`
+
+下载、解压后直接运行即可。详细步骤见 [BINARY_DEPLOYMENT.md](BINARY_DEPLOYMENT.md)。二进制程序默认使用 `9696` 端口，并将数据保存到程序目录的 `data` 文件夹中。二进制构建依赖单独列在 `requirements-build.txt`，不会进入 Docker 镜像。
 
 ## Docker Compose 部署
 
@@ -104,5 +113,6 @@ docker run -d \
 ├── static/illustrations/
 ├── Dockerfile
 ├── docker-compose.yml
+├── BINARY_DEPLOYMENT.md
 └── .github/workflows/publish-image.yml
 ```

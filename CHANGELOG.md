@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.14 - 2026-08-07
+
+- fix: preserve install wizard credentials (6e01c60)
+
 ## v0.6.13 - 2026-08-07
 
 - feat: add first-run administrator setup (d134587)

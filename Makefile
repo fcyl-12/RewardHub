@@ -8,7 +8,7 @@ TAG := v$(VERSION)
 .PHONY: version next-version test check bump-version changelog release
 
 version next-version:
->printf '%s\n' "$(VERSION)"
+>@printf '%s' "$(VERSION)"
 
 test:
 >$(PYTHON) -m unittest discover -s tests -q

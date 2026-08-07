@@ -74,19 +74,8 @@ ADMIN_PASSWORD=change-this-password
 
 首次启动后访问 `http://飞牛NAS地址:9696`，按照页面引导创建管理员账号。
 
-## 二进制部署
+## 镜像更新
 
-从 [Releases](https://github.com/fcyl-12/RewardHub/releases) 下载对应系统的压缩包，解压后直接运行。
+推送到 `main` 分支后，GHCR 会自动构建最新 Docker 镜像：
 
-- Linux：`RewardHub-版本号-linux-x86_64.tar.gz`
-- Windows：`RewardHub-版本号-windows-x86_64.zip`
-
-二进制程序默认使用 `9696` 端口，数据保存在程序目录下的 `data` 文件夹中。详细说明见 [BINARY_DEPLOYMENT.md](BINARY_DEPLOYMENT.md)。
-
-## 自动发布
-
-推送到 `main` 分支后，GitHub Actions 会自动构建并发布：
-
-- GHCR Docker 镜像：`ghcr.io/fcyl-12/rewardhub:latest`
-- Linux 二进制包
-- Windows 二进制包
+`ghcr.io/fcyl-12/rewardhub:latest`
